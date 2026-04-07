@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ZenWorkout</title>
+  <style>
+    :root {
+      --bg: #f1eee8;
+      --text: #1e2224;
+      --dark-shadow: rgba(120, 128, 132, 0.28);
+      --light-shadow: rgba(255, 255, 255, 0.85);
+      --radius-xl: 28px;
+      --radius-md: 18px;
+      --transition: 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      --accent: #596169;
+      --accent-soft: #d9d3ca;
+      --ok: #6f8b6e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px 16px calc(16px + env(safe-area-inset-bottom));
+    }
+
+    .neo {
+      border-radius: var(--radius-xl);
+      background: var(--bg);
+      box-shadow:
+        -9px -9px 22px var(--light-shadow),
+        9px 9px 22px var(--dark-shadow);
+      transition: transform var(--transition), box-shadow var(--transition), opacity var(--transition);
+    }
+
+    .neo:active {
+      transform: scale(0.99);
+    }
+
+    .header {
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(22px, 3.8vw, 34px);
+      letter-spacing: 0.02em;
+    }
+
+    .week-chip {
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 14px;
+      background: var(--bg);
+      box-shadow:
+        -6px -6px 14px var(--light-shadow),
+        6px 6px 14px var(--dark-shadow);
+    }
+
+    .phase-selector {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .phase-btn {
+      border: none;
+      background: var(--bg);
+      border-radius: 16px;
+      padding: 11px 8px;
+      color: var(--text);
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow:
+        -6px -6px 12px var(--light-shadow),
+        6px 6px 12px var(--dark-shadow);
+      transition: all var(--transition);
+    }
+
+    .phase-btn.active {
+      color: #fff;
+      background: var(--accent);
+      box-shadow:
+        inset -5px -5px 10px rgba(255, 255, 255, 0.2),
+        inset 5px 5px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .progress-wrap {
+      margin-top: 6px;
+    }
+
+    .progress-text {
+      font-size: 13px;
+      margin-bottom: 6px;
+      opacity: 0.84;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: #e2ddd4;
+      overflow: hidden;
+      box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #808d7d, var(--ok));
+      transition: width var(--transition);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin: 14px 0 18px;
+    }
+
+    .btn {
+      flex: 1;
+      border: none;
+      background: var(--bg);
+      color: var(--text);
+      border-radius: var(--radius-md);
+      padding: 12px 10px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow:
+        -7px -7px 14px var(--light-shadow),
+        7px 7px 14px var(--dark-shadow);
+      transition: all var(--transition);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .split {
+      display: grid;
+      gap: 14px;
+    }
+
+    .day-card {
+      padding: 16px;
+    }
+
+    .day-title {
+      margin: 0 0 10px;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .today-badge {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #d6dfd3;
+      color: #304130;
+    }
+
+    .exercise-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .exercise {
+      padding: 12px;
+      border-radius: 16px;
+      background: var(--bg);
+      box-shadow:
+        -5px -5px 10px var(--light-shadow),
+        5px 5px 10px var(--dark-shadow);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .exercise input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--ok);
+      cursor: pointer;
+    }
+
+    .exercise-name {
+      border: none;
+      padding: 0;
+      text-align: left;
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity var(--transition);
+    }
+
+    .exercise-name:hover {
+      opacity: 0.72;
+    }
+
+    .meta {
+      font-size: 12px;
+      opacity: 0.7;
+      text-align: right;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(30, 34, 36, 0.28);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: fadeIn var(--transition);
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .modal,
+    .timer-card {
+      width: min(560px, 100%);
+      border-radius: 24px;
+      padding: 18px;
+      background: var(--bg);
+      box-shadow:
+        -12px -12px 26px var(--light-shadow),
+        12px 12px 26px var(--dark-shadow);
+      transform: translateY(8px) scale(0.98);
+      animation: springIn var(--transition) forwards;
+    }
+
+    .modal h3 {
+      margin: 0 0 10px;
+      font-size: 22px;
+    }
+
+    .modal p {
+      margin: 6px 0;
+      line-height: 1.45;
+    }
+
+    .timer-number {
+      font-size: clamp(40px, 14vw, 72px);
+      text-align: center;
+      margin: 10px 0 4px;
+      font-weight: 700;
+    }
+
+    .timer-title {
+      margin: 0;
+      text-align: center;
+      opacity: 0.75;
+    }
+
+    .modal-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .icon {
+      width: 16px;
+      height: 16px;
+      vertical-align: -2px;
+      margin-right: 6px;
+      opacity: 0.85;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes springIn {
+      from { transform: translateY(12px) scale(0.97); }
+      to { transform: translateY(0) scale(1); }
+    }
+
+    @media (max-width: 720px) {
+      .actions {
+        flex-direction: column;
+      }
+      .exercise {
+        grid-template-columns: auto 1fr;
+      }
+      .meta {
+        grid-column: 2;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header neo">
+      <div class="title-row">
+        <h1 class="title"><i data-lucide="mountain-snow" class="icon"></i>ZenWorkout</h1>
+        <div class="week-chip" id="weekChip">Неделя 1</div>
+      </div>
+
+      <div class="phase-selector" id="phaseSelector"></div>
+
+      <div class="progress-wrap">
+        <div class="progress-text" id="progressText">Прогресс недели: 0%</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="actions">
+      <button class="btn" id="resetDayBtn"><i data-lucide="rotate-ccw" class="icon"></i>Сбросить день</button>
+      <button class="btn primary" id="finishWeekBtn"><i data-lucide="check-check" class="icon"></i>Завершить неделю</button>
+    </div>
+
+    <main class="split" id="split"></main>
+  </div>
+
+  <div class="overlay" id="exerciseModalOverlay">
+    <div class="modal">
+      <h3 id="modalTitle">Упражнение</h3>
+      <p><strong>Техника выполнения:</strong></p>
+      <p id="modalTechnique"></p>
+      <p><strong>Цель:</strong></p>
+      <p id="modalGoal"></p>
+      <div class="modal-actions">
+        <button class="btn primary" id="closeExerciseModal"><i data-lucide="x" class="icon"></i>Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="timerOverlay">
+    <div class="timer-card">
+      <p class="timer-title" id="timerExercise">Отдых</p>
+      <div class="timer-number" id="timerNumber">60</div>
+      <div class="modal-actions">
+        <button class="btn" id="skipTimerBtn"><i data-lucide="skip-forward" class="icon"></i>Пропустить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    const STORAGE_KEY = "zenworkout_state_v1";
+    const phases = [
+      { id: 1, title: "Фаза 1 · Foundation" },
+      { id: 2, title: "Фаза 2 · Progression" },
+      { id: 3, title: "Фаза 3 · Peak" }
+    ];
+    const dayNames = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+    const dayFocus = [
+      "Planche & Push (Плечи/Грудь/Трицепс)",
+      "Lever & Pull (Спина/Бицепс/Осанка)",
+      "Handstand/Jump/Core (Ноги/Пресс/Баланс)",
+      "Planche & Push (Плечи/Грудь/Трицепс)",
+      "Lever & Pull (Спина/Бицепс/Осанка)",
+      "Handstand/Jump/Core (Ноги/Пресс/Баланс)"
+    ];
+
+    function ex(id, name, volume, rest, technique, goal) {
+      return { id, name, volume, rest, technique, goal };
+    }
+
+    const training = {
+      1: [
+        [
+          ex("p1d1e1", "Tuck Planche Hold (Тук Планш)", "4 x max сек", 120, "Лопатки в протракции, таз подкручен, колени к груди, локти прямые.", "Укрепить сухожилия запястий и базовую статическую силу для планша."),
+          ex("p1d1e2", "Pike Pushups (Пайк Отжимания)", "4 x 8-10", 90, "Корпус в V-позиции, движение вверх-вниз через плечевой пояс, без провала в пояснице.", "Развить жимовую силу плеч и подготовить базу для HSPU."),
+          ex("p1d1e3", "Pseudo Planche Pushups (ПППУ)", "4 x 8-10", 90, "Плечи уводи вперед за кисти, корпус единый, локти контролируй.", "Перенос нагрузки в переднюю линию для будущего full planche."),
+          ex("p1d1e4", "Diamond Pushups (Алмазные Отжимания)", "3 x 12", 60, "Кисти узко, локти вдоль корпуса, фиксируй верх в полной проекции.", "Добрать объем трицепса и грудных."),
+          ex("p1d1e5", "Hollow Body Hold (Холлоу)", "3 x 30-40 сек", 45, "Поясница прижата к полу, ребра закрыты, ноги и руки вытянуты.", "Создать стабильный корпус для статик."),
+        ],
+        [
+          ex("p1d2e1", "Wide Pullups (Широкие Подтягивания)", "4 x 10-12", 90, "Грудь тяни к перекладине, лопатки вниз-назад, без рывка.", "Набор объема широчайших и базы тяги."),
+          ex("p1d2e2", "Tuck Front Lever Hold (Тук Фронт Левер)", "4 x max сек", 120, "Подвес на прямых руках, таз подкручен, колени ближе к груди.", "База статической силы для фронт левера."),
+          ex("p1d2e3", "Australian Rows (Горизонтальные Тяги)", "4 x 12", 60, "Корпус прямой, тяни локти назад, вверху пауза 1 сек.", "Укрепить среднюю спину и осанку."),
+          ex("p1d2e4", "Face Pull Band (Тяга к Лицу)", "3 x 15", 60, "Локти выше кистей, лопатки своди плавно, шею не зажимай.", "Развить заднюю дельту и стабилизаторы лопатки."),
+          ex("p1d2e5", "Dead Hang Scap Pulls (Скап Подтягивания)", "3 x 12", 60, "Вис на прямых руках, только движение лопатками вниз-вверх.", "Укрепить плечевой пояс и снизить риск травм."),
+        ],
+        [
+          ex("p1d3e1", "Wall Handstand Hold (Стойка у Стены)", "5 x 30-45 сек", 120, "Плечи открыты, таз под контролем, пальцами балансируй давление.", "Развить баланс и выносливость в стойке."),
+          ex("p1d3e2", "Jump Squats (Прыжковые Приседания)", "4 x 12", 90, "Мягкое приземление на середину стопы, колени по траектории носков.", "Взрывная сила ног и атлетичность."),
+          ex("p1d3e3", "L-Sit Tuck (Тук L-Sit)", "4 x 20-30 сек", 120, "Плечи вниз, локти прямые, таз подкручен, колени выше.", "Подготовка пресса и сгибателей бедра под статику."),
+          ex("p1d3e4", "Hanging Knee Raises (Подъем Коленей в Висе)", "4 x 12", 45, "Без раскачки, подкручивай таз в верхней точке.", "Сильный нижний пресс для линий в левере и стойке."),
+          ex("p1d3e5", "Calf Raises (Подъемы на Носки)", "3 x 18", 45, "Полная амплитуда, пауза наверху 1 сек.", "Поддержка прыжка и эстетика голени."),
+        ],
+        [],
+        [],
+        []
+      ],
+      2: [
+        [
+          ex("p2d1e1", "Advanced Tuck Planche (Продвинутый Тук Планш)", "5 x max сек", 120, "Колени чуть дальше от груди, таз стабилен, лопатки в протракции.", "Переход к силовой линии full planche."),
+          ex("p2d1e2", "Wall HSPU (Отжимания в Стойке у Стены)", "5 x 4-6", 120, "Контроль эксцентрики, голова между ладонями, корпус единый.", "Сильные плечи и жим вверх для handstand press."),
+          ex("p2d1e3", "Planche Leans (Наклоны в Планш)", "4 x 20 сек", 120, "Плечи сильно вперед, локти замкнуты, корпус жесткий.", "Укрепить лучезапястные и переднюю цепь."),
+          ex("p2d1e4", "Explosive Pushups (Взрывные Отжимания)", "4 x 8", 90, "Выход вверх максимально быстро, мягкий прием.", "Скоростно-силовая адаптация верха."),
+          ex("p2d1e5", "V-Ups (V-складки)", "4 x 15", 45, "Синхронный подъем рук и ног, поясница под контролем.", "Рельеф пресса и динамика корпуса."),
+        ],
+        [
+          ex("p2d2e1", "Explosive Pullups (Взрывные Подтягивания)", "5 x 5-6", 90, "Подъем с ускорением, грудь выше перекладины по возможности.", "Сила для выходов и динамики тяги."),
+          ex("p2d2e2", "Advanced Tuck Front Lever (Продв. Тук Левер)", "5 x max сек", 120, "Таз подкручен, корпус параллелен полу, шея нейтральна.", "Переход к full front lever."),
+          ex("p2d2e3", "Archer Rows (Лучник Тяги)", "4 x 8/сторона", 90, "Смещай вес на рабочую руку, корпус стабилизируй.", "Односторонняя тяговая сила и контроль."),
+          ex("p2d2e4", "Band High Rows (Высокая Тяга Резиной)", "4 x 12", 60, "Локти в стороны, движение от лопатки.", "Укрепить заднюю дельту и верх спины."),
+          ex("p2d2e5", "Dragon Flag Negatives (Негативы Дракон Флаг)", "4 x 5", 120, "Опускайся медленно 3-4 сек, корпус прямой.", "Жесткость корпуса для статических элементов."),
+        ],
+        [
+          ex("p2d3e1", "Freestanding Handstand Attempts (Попытки Стойки)", "10-15 мин", 120, "Работай короткими подходами, фокус на линию и пальцы.", "Баланс без опоры и нейромышечный контроль."),
+          ex("p2d3e2", "Broad Jumps (Прыжки в Длину)", "5 x 6", 90, "Мах руками, мощный вынос бедра, мягкий прием.", "Взрывная мощность задней цепи."),
+          ex("p2d3e3", "Pistol Squat Box (Пистолет к Опоре)", "4 x 6/нога", 90, "Колено стабильно, пятка прижата, контроль вниз.", "Односторонняя сила ног и стабильность таза."),
+          ex("p2d3e4", "Toes to Bar (Носки к Перекладине)", "4 x 8-10", 45, "Плавный подъем без сильной раскачки, стопы до перекладины.", "Сила кора и сгибателей бедра."),
+          ex("p2d3e5", "Side Plank Reach (Боковая Планка Reach)", "3 x 30 сек", 45, "Таз высоко, плечо стабильно, контролируй ротацию.", "Антиротационная стабильность корпуса."),
+        ],
+        [],
+        [],
+        []
+      ],
+      3: [
+        [
+          ex("p3d1e1", "Full Planche w/ Band (Фулл Планш с Резиной)", "6 x max сек", 120, "Собери полую линию тела, лопатки протракция, носки натянуты.", "Максимальная специфическая адаптация под full planche."),
+          ex("p3d1e2", "Planche Pushup Negatives (Негативы Планш Отжиманий)", "5 x 3-5", 120, "Медленное опускание 4 сек, локти по линии плеч.", "Экцентрика для силового контроля в глубине."),
+          ex("p3d1e3", "Wall HSPU Deficit (HSPU с Дефицитом)", "5 x 3-4", 120, "Глубокая амплитуда, корпус жесткий, дыхание под контроль.", "Пиковая сила плеч для стойки и жима."),
+          ex("p3d1e4", "Ring Dips (Отжимания на Кольцах)", "4 x 8", 90, "Кольца близко к корпусу, лопатки стабилизируй.", "Эстетика груди/трицепса и силовой баланс."),
+          ex("p3d1e5", "Hollow Rocks (Холлоу Роки)", "4 x 25", 45, "Качайся в одной линии без потери позиции.", "Финальная шлифовка жесткости кора."),
+        ],
+        [
+          ex("p3d2e1", "Front Lever Full Attempts (Фулл Фронт Левер)", "6 x max сек", 120, "Корпус прямой, таз нейтрально, тяни перекладину к тазу.", "Выход на полный фронт левер."),
+          ex("p3d2e2", "Muscle-ups (Выходы Силой)", "5 x 3-5", 120, "Ложный хват при необходимости, взрыв тяги и быстрый переворот.", "Комплексная сила тяги/жима и атлетичность."),
+          ex("p3d2e3", "Weighted Pullups (Подтягивания с Весом)", "5 x 4-6", 90, "Строгая техника, полный контроль вниз.", "Пиковая тяговая сила и плотность спины."),
+          ex("p3d2e4", "Rear Delt Fly Band (Разводка на Заднюю Дельту)", "4 x 15", 60, "Плечи вниз, движение в плоскости лопатки.", "Эстетика задней дельты и здоровье плеч."),
+          ex("p3d2e5", "Reverse Crunches (Обратные Скручивания)", "4 x 20", 45, "Подкручивание таза вверху, без инерции.", "Четкая сепарация нижнего пресса."),
+        ],
+        [
+          ex("p3d3e1", "Freestanding Handstand Max (Стойка Макс)", "8 x max сек", 120, "Собери вертикаль: кисть-плечо-таз-пятка в одной линии.", "Максимум времени в чистой стойке."),
+          ex("p3d3e2", "Depth Jumps (Прыжки в Глубину)", "5 x 5", 90, "Сход с тумбы, быстрая амортизация и взрыв вверх.", "Реактивная сила и скорость ног."),
+          ex("p3d3e3", "Sprints 40m (Спринт 40м)", "6 повторов", 90, "Полный отдых между повторами, акцент на мощный старт.", "Сухая, функциональная атлетичность."),
+          ex("p3d3e4", "Hanging Leg Raises Strict (Подъем Ног Строгий)", "4 x 12", 45, "Ноги прямые, контроль эксцентрики.", "Глубокий пресс и линия корпуса."),
+          ex("p3d3e5", "Ab Wheel (Роллауты)", "4 x 10", 45, "Нейтральная поясница, движение от плеч.", "Финализация силы кора."),
+        ],
+        [],
+        [],
+        []
+      ]
+    };
+
+    function cloneDay(arr) {
+      return arr.map((x) => ({ ...x }));
+    }
+    function mirrorDays(data) {
+      for (let p = 1; p <= 3; p += 1) {
+        data[p][3] = cloneDay(data[p][0]);
+        data[p][4] = cloneDay(data[p][1]);
+        data[p][5] = cloneDay(data[p][2]);
+      }
+      return data;
+    }
+    mirrorDays(training);
+
+    const state = loadState();
+    let timerId = null;
+    let timerRemain = 0;
+
+    const phaseSelector = document.getElementById("phaseSelector");
+    const splitEl = document.getElementById("split");
+    const weekChip = document.getElementById("weekChip");
+    const progressText = document.getElementById("progressText");
+    const progressFill = document.getElementById("progressFill");
+    const resetDayBtn = document.getElementById("resetDayBtn");
+    const finishWeekBtn = document.getElementById("finishWeekBtn");
+
+    const exerciseModalOverlay = document.getElementById("exerciseModalOverlay");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalTechnique = document.getElementById("modalTechnique");
+    const modalGoal = document.getElementById("modalGoal");
+    const closeExerciseModal = document.getElementById("closeExerciseModal");
+
+    const timerOverlay = document.getElementById("timerOverlay");
+    const timerExercise = document.getElementById("timerExercise");
+    const timerNumber = document.getElementById("timerNumber");
+    const skipTimerBtn = document.getElementById("skipTimerBtn");
+
+    function loadState() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        return {
+          phase: [1, 2, 3].includes(parsed.phase) ? parsed.phase : 1,
+          week: Number.isInteger(parsed.week) && parsed.week > 0 ? parsed.week : 1,
+          checks: typeof parsed.checks === "object" && parsed.checks ? parsed.checks : {}
+        };
+      } catch (_) {
+        return { phase: 1, week: 1, checks: {} };
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function checkKey(phaseId, dayIndex, exId) {
+      return `${phaseId}:${dayIndex}:${exId}`;
+    }
+
+    function isChecked(phaseId, dayIndex, exId) {
+      return Boolean(state.checks[checkKey(phaseId, dayIndex, exId)]);
+    }
+
+    function setChecked(phaseId, dayIndex, exId, checked) {
+      const key = checkKey(phaseId, dayIndex, exId);
+      if (checked) state.checks[key] = true;
+      else delete state.checks[key];
+      saveState();
+    }
+
+    function getTodayIndex() {
+      const d = new Date().getDay();
+      if (d === 0) return 5;
+      return Math.max(0, Math.min(5, d - 1));
+    }
+
+    function getPhaseExercises(phaseId) {
+      return training[phaseId].flat();
+    }
+
+    function calcProgress() {
+      const list = getPhaseExercises(state.phase);
+      const total = list.length;
+      const done = list.filter((e, idx) => {
+        const dayIndex = Math.floor(idx / 5);
+        return isChecked(state.phase, dayIndex, e.id);
+      }).length;
+      return { done, total, percent: total ? Math.round((done / total) * 100) : 0 };
+    }
+
+    function openExerciseModal(exercise) {
+      modalTitle.textContent = exercise.name;
+      modalTechnique.textContent = exercise.technique;
+      modalGoal.textContent = exercise.goal;
+      exerciseModalOverlay.classList.add("show");
+    }
+
+    function closeExerciseInfo() {
+      exerciseModalOverlay.classList.remove("show");
+    }
+
+    function stopTimer() {
+      if (timerId) clearInterval(timerId);
+      timerId = null;
+      timerOverlay.classList.remove("show");
+    }
+
+    function startTimer(exercise) {
+      stopTimer();
+      timerRemain = exercise.rest;
+      timerExercise.textContent = `Отдых: ${exercise.name}`;
+      timerNumber.textContent = timerRemain;
+      timerOverlay.classList.add("show");
+      timerId = setInterval(() => {
+        timerRemain -= 1;
+        timerNumber.textContent = Math.max(0, timerRemain);
+        if (timerRemain <= 0) {
+          stopTimer();
+        }
+      }, 1000);
+    }
+
+    function renderPhases() {
+      phaseSelector.innerHTML = "";
+      phases.forEach((p) => {
+        const btn = document.createElement("button");
+        btn.className = `phase-btn ${state.phase === p.id ? "active" : ""}`;
+        btn.textContent = p.title;
+        btn.addEventListener("click", () => {
+          state.phase = p.id;
+          saveState();
+          render();
+        });
+        phaseSelector.appendChild(btn);
+      });
+    }
+
+    function renderSplit() {
+      splitEl.innerHTML = "";
+      const today = getTodayIndex();
+      const phaseData = training[state.phase];
+
+      phaseData.forEach((dayExercises, dayIndex) => {
+        const card = document.createElement("section");
+        card.className = "day-card neo";
+
+        const title = document.createElement("h2");
+        title.className = "day-title";
+        title.innerHTML = `<span>${dayNames[dayIndex]} · ${dayFocus[dayIndex]}</span>`;
+        if (dayIndex === today) {
+          const badge = document.createElement("span");
+          badge.className = "today-badge";
+          badge.textContent = "Сегодня";
+          title.appendChild(badge);
+        }
+
+        const list = document.createElement("div");
+        list.className = "exercise-list";
+
+        dayExercises.forEach((exercise) => {
+          const row = document.createElement("div");
+          row.className = "exercise";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = isChecked(state.phase, dayIndex, exercise.id);
+          checkbox.addEventListener("change", () => {
+            setChecked(state.phase, dayIndex, exercise.id, checkbox.checked);
+            if (checkbox.checked) startTimer(exercise);
+            renderProgress();
+          });
+
+          const nameBtn = document.createElement("button");
+          nameBtn.className = "exercise-name";
+          nameBtn.textContent = exercise.name;
+          nameBtn.addEventListener("click", () => openExerciseModal(exercise));
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          meta.innerHTML = `<span>${exercise.volume}</span><br><span>Отдых: ${exercise.rest}с</span>`;
+
+          row.appendChild(checkbox);
+          row.appendChild(nameBtn);
+          row.appendChild(meta);
+          list.appendChild(row);
+        });
+
+        card.appendChild(title);
+        card.appendChild(list);
+        splitEl.appendChild(card);
+      });
+    }
+
+    function renderProgress() {
+      const { done, total, percent } = calcProgress();
+      progressText.textContent = `Прогресс недели: ${percent}% (${done}/${total})`;
+      progressFill.style.width = `${percent}%`;
+      weekChip.textContent = `Неделя ${state.week}`;
+    }
+
+    function resetToday() {
+      const today = getTodayIndex();
+      const day = training[state.phase][today];
+      day.forEach((exercise) => {
+        setChecked(state.phase, today, exercise.id, false);
+      });
+      stopTimer();
+      render();
+    }
+
+    function finishWeek() {
+      state.week += 1;
+      state.checks = {};
+      saveState();
+      stopTimer();
+      render();
+    }
+
+    function render() {
+      renderPhases();
+      renderSplit();
+      renderProgress();
+      lucide.createIcons();
+    }
+
+    resetDayBtn.addEventListener("click", resetToday);
+    finishWeekBtn.addEventListener("click", finishWeek);
+    closeExerciseModal.addEventListener("click", closeExerciseInfo);
+    exerciseModalOverlay.addEventListener("click", (e) => {
+      if (e.target === exerciseModalOverlay) closeExerciseInfo();
+    });
+    skipTimerBtn.addEventListener("click", stopTimer);
+    timerOverlay.addEventListener("click", (e) => {
+      if (e.target === timerOverlay) stopTimer();
+    });
+
+    render();
+  </script>
+</body>
+</html>
